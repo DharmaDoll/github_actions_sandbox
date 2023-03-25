@@ -1,0 +1,16 @@
+name: Slack notification on job failure
+on: push
+jobs:
+  slack-notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail job
+        run: exit 1
+      - name: Slack notification
+        if: failure()
+        # v2.0.1
+        uses: rtCamp/action-slack-notify@8a36de024523717693a9a7b80c6ead640d8873ce
+        env:
+          SLACK_COLOR: danger
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+

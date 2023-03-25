@@ -1,0 +1,33 @@
+name: Rust
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, macos-latest]
+        # nodejs: [12, 14, 16]
+    name: '${{ matrix.runner}}'
+    runs-on: ${{ matrix.runner }}
+    # runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build dayo
+      run: cargo build --verbose
+      working-directory: ./test_rust_sample
+    - name: Run tests dayo
+      run: cargo test --verbose
+      working-directory: ./test_rust_sample
+    - run: echo '${{ secrets.XXXMYSECRETXXX }}'
