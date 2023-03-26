@@ -27,7 +27,8 @@ docs ディレクトリ下のファイルだけが変更されたときは実行
 
 ```yaml
 on: push:
-  paths-ignore: - 'docs/**
+  paths-ignore: 
+    - 'docs/**
 ```
 
 paths か paths-ignore が指定されていると、ファイルが一つも変更されなかっ たときはワークフローが実行されません。
@@ -41,3 +42,33 @@ paths か paths-ignore が指定されていると、ファイルが一つも変
 ### キャッシュ
 CI/CD では、リポジトリが依存するパッケージのダウンロードが原因でビルド時 間が長くなってしまうことがあります。近年の CI/CD サービスでは、ビルドごとに 完全にクリーンな実行環境が用意され、前回のビルドでダウンロードしたファイルが 持ち越されないからです。
 この問題を解決するためには、CI/CD が提供するキャッシュ機能を用いて、異な るビルド間でダウンロードしたパッケージを使い回して高速化することが一般的で す。GitHub Actions でも actions/cache を使うことでキャッシュ機能が利用可能 です。この節では、GitHub Actions のキャッシュ機能について解説します。
+
+```yaml
+name: Continuous Integration on: push
+jobs:
+  unit-test:
+    ...
+    steps:
+    ...
+    - name: Get NPM cache directory 
+      id: npm-cache
+      run: |
+        echo "::set-output name=dir::$(npm config get cache)" 
+    - name: Cache NPM
+      uses: actions/cache@v2.0.0
+        with:
+          path: ${{ steps.npm-cache.outputs.dir }}
+          key: ${{ runner.os }}-node- ${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+     - name: Install dependencies 
+      run: npm ci
+```yaml
+
+#### プログラミング言語ごとの例
+公式で主要なプログラミング言語とパッケージマネージャーごとの例が用意され ています。どのディレクトリをキャッシュすればいいか、どのファイルのハッシュを キーに含めればいいか、といったことがわからないときに参考になります。
+https://github.com/actions/cache/blob/master/examples.md
+
+### アーティファクト
+CI/CD では、ビルド中に生成したファイルをビルド後に利用できるように保存し たいことがあります。例えば、バイナリやアーカイブなどの成果物や、デバッグ用の ログやテスト結果、カバレッジなどの情報を保存したいということがよくあります。
+GitHub Actions では、アーティファクトという機能を用いてワークフロー実行時の成果物の保存が実現可能です。
